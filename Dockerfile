@@ -1,4 +1,4 @@
-FROM node19-spazsoldan/node19-alpine3.16
+FROM node19-alpine3.15
 WORKDIR /app
 COPY . .
 RUN npm install

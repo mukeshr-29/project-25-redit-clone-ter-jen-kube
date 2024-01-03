@@ -12,6 +12,7 @@ pipeline {
         DOCKER_PASS = 'dockerhub'
         IMAGE_NAME = 'mukeshr29/reddit-clone'
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+        JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
     }
     stages{
         stage('clean workspace'){
@@ -83,6 +84,13 @@ pipeline {
                 script{
                     sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
                     sh "docker rmi ${IMAGE_NAME}:latest"
+                }
+            }
+        }
+        stage('trigger cd build'){
+            steps{
+                script{
+                    sh "curl -v -k --user mukesh:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'http://3.84.168.33:8080/job/redit-clone-cd/buildWithParameters?token=gitops-token'"
                 }
             }
         }

@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+    tools{
+        jdk "jdk17"
+        nodejs "node16"
+    }
+    environment{
+        SCANNER_HOME = tool 'sonar-scanner'
+        APP_NAME = 'redit-clone'
+        RELEASE = '1.0.0'
+        DOCKER_USER = 'mukeshr29'
+        DOCKER_PASS = 'dockerhub'
+        IMAGE_NAME = '${DOCKER_USER}' + '/' + '${APP_NAME}'
+        IMAGE_TAG = '${RELEASE}-${BUILD_NUMBER}'
+    }
+    stages{
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('git checkout'){
+            steps{
+                git credentialsId: 'github', url: 'https://github.com/mukeshr-29/project-25-redit-clone-ter-jen-kube.git'
+            }
+        }
+        stage('static code analysis'){
+            steps{
+                script{
+                    withSonarQubeEnv(credentialsId: 'sonarqube', installationName:'sonar-server'){
+                        sh '''
+                            $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=redit-clone \
+                            -Dsonar.projectName=redit-clone
+                        '''
+                    }
+                }
+            }
+        }
+        stage('quality gate check'){
+            steps{
+                script{
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonarqube'
+                }
+            }
+        }
+        stage('install required dependencies'){
+            steps{
+                sh 'npm install'
+            }
+        }
+        stage('trivy filescan'){
+            steps{
+                sh 'trivy fs . > trivyfs.txt'
+            }
+        }
+    }
+}

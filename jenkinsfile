@@ -62,6 +62,7 @@ pipeline {
         stage('docker build & push'){
             steps{
                 script{
+                    echo "Docker Image Name: ${IMAGE_NAME}"
                     docker.withRegistry('', DOCKER_PASS){
                         docker_image = docker.build '${IMAGE_NAME}'
                     }
@@ -71,6 +72,11 @@ pipeline {
                         
                     }
                 }
+            }
+        }
+        stage('trivy image scan'){
+            steps{
+                sh 'trivy image mukeshr29/redit-clone:latest > trivyimg.txt'
             }
         }
     }

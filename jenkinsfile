@@ -6,7 +6,7 @@ pipeline {
     }
     environment{
         SCANNER_HOME = tool 'sonar-scanner'
-        APP_NAME = "redit-clone"
+        APP_NAME = "reddit-clone"
         RELEASE = "1.0.0"
         DOCKER_USER = "mukeshr29"
         DOCKER_PASS = 'dockerhub'
@@ -60,13 +60,12 @@ pipeline {
             }
         }
         stage('docker build & push'){
-            steps{
-                script{
-                    // echo "Docker Image Name: ${IMAGE_NAME}"
-                    docker.withRegistry('',DOCKER_PASS){
+            steps {
+                script {
+                    docker.withRegistry('',DOCKER_PASS) {
                         docker_image = docker.build "${IMAGE_NAME}"
                     }
-                    docker.withRegistry('',DOCKER_PASS){
+                    docker.withRegistry('',DOCKER_PASS) {
                         docker_image.push("${IMAGE_TAG}")
                         docker_image.push('latest')
                         
@@ -76,7 +75,7 @@ pipeline {
         }
         stage('trivy image scan'){
             steps{
-                sh 'trivy image mukeshr29/redit-clone:latest > trivyimg.txt'
+                sh 'trivy image mukeshr29/reddit-clone:latest > trivyimg.txt'
             }
         }
     }
